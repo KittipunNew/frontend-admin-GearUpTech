@@ -1,24 +1,42 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
+import { logoutIcon } from '../assets/icon';
+import { useContext } from 'react';
+import { TokenContext } from '../context/TokenContext';
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+  const { token, setToken } = useContext(TokenContext);
+  const handleLogout = () => {
+    setToken('');
+    navigate('/login/admin');
+  };
+
   return (
-    <div className="bg-black w-80 p-10">
+    <div className="bg-black w-80 p-10 flex flex-col justify-between items-end">
       <ul className="text-white text-xl text-end font-bold flex flex-col gap-10">
         <li>
           <img src={assets.logo} alt="" />
         </li>
         <li className="border-2 border-white"></li>
         <li>
-          <Link to="/addproducts">Add products</Link>
+          <Link to="/">List products</Link>
         </li>
         <li>
-          <Link to="/listproducts">List products</Link>
+          <Link to="/addproducts">Add products</Link>
         </li>
         <li>
           <Link to="/orders">Orders</Link>
         </li>
       </ul>
+      <div className="w-full">
+        <button
+          className="btn btn-error text-white w-full"
+          onClick={handleLogout}
+        >
+          {logoutIcon}Logout
+        </button>
+      </div>
     </div>
   );
 };

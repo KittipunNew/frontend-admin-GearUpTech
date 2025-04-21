@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { assets } from './../assets/assets';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { backendUrl } from '../App';
-useState;
+import { TokenContext } from '../context/TokenContext';
+import { ProductDataContext } from '../context/ProductContext';
+
 const AddProduct = () => {
+  const { token } = useContext(TokenContext);
+  const { fetchList } = useContext(ProductDataContext);
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
   const [image3, setImage3] = useState(null);
@@ -12,6 +16,7 @@ const AddProduct = () => {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [specs, setSpecs] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
   const [bestseller, setBestseller] = useState(false);
@@ -24,6 +29,7 @@ const AddProduct = () => {
 
       formData.append('name', name);
       formData.append('description', description);
+      formData.append('specs', specs.trim());
       formData.append('price', price);
       formData.append('category', category);
       formData.append('bestseller', bestseller);
@@ -33,12 +39,16 @@ const AddProduct = () => {
       image3 && formData.append('image3', image3);
       image4 && formData.append('image4', image4);
 
-      const response = await axios.post(backendUrl + '/api/product', formData);
+      const response = await axios.post(backendUrl + '/api/product', formData, {
+        headers: { 'token': token },
+      });
 
       if (response.data.success) {
         toast.success(response.data.message);
+        fetchList();
         setName('');
         setDescription('');
+        setSpecs('');
         setPrice(null);
         setImage1(null);
         setImage2(null);
@@ -53,7 +63,6 @@ const AddProduct = () => {
     }
   };
 
-  console.log(bestseller);
   return (
     <form
       className="flex flex-col gap-10 p-10 bg-white rounded-xl shadow-lg"
@@ -219,6 +228,22 @@ const AddProduct = () => {
           className="textarea"
           placeholder="Write content here"
           onChange={(e) => setDescription(e.target.value)}
+          value={description}
+        ></textarea>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label for="specInput" className="font-bold text-xl">
+          Technical specifications{' '}
+          <span className="text-sm text-red-500">
+            (***Please enter each specification on a new line.***)
+          </span>
+        </label>
+        <textarea
+          className="textarea"
+          placeholder={`e.g. CPU: Intel Core i7-14700`}
+          onChange={(e) => setSpecs(e.target.value)}
+          value={specs}
         ></textarea>
       </div>
 
@@ -228,7 +253,7 @@ const AddProduct = () => {
           <select
             defaultValue="category"
             className="select"
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => setCategory(e.target.value.toLowerCase())}
           >
             <option disabled={true}>category</option>
             <option>PC</option>
@@ -248,6 +273,7 @@ const AddProduct = () => {
               placeholder="200"
               className="input"
               onChange={(e) => setPrice(e.target.value)}
+              value={price}
             />
             <p>฿</p>
           </div>
