@@ -8,12 +8,12 @@ import { TokenProvider } from './context/TokenContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <TokenProvider>
+    <TokenProvider>
+      <BrowserRouter>
         <ProductDataProvider>
           <App />
         </ProductDataProvider>
-      </TokenProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </TokenProvider>
   </StrictMode>
 );

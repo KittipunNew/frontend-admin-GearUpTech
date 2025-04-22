@@ -4,7 +4,6 @@ import axios from 'axios';
 import { backendUrl } from '../App';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { ProductDataContext } from '../context/ProductContext';
 import { TokenContext } from '../context/TokenContext';
 
 const Login = () => {
@@ -16,12 +15,16 @@ const Login = () => {
   const onSubmitHandler = async (e) => {
     try {
       e.preventDefault();
-      const response = await axios.post(backendUrl + '/api/user/admin', {
+      const response = await axios.post(backendUrl + '/api/admin/login', {
         username,
         password,
       });
 
-      if (response.data.success) {
+      if (
+        response.data.success &&
+        (response.data.role === 'superadmin' || response.data.role === 'staff')
+      ) {
+        localStorage.removeItem('token'); // เคลียร์ token เก่า
         setToken(response.data.token);
         navigate('/');
       } else {
