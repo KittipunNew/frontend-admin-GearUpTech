@@ -1,40 +1,48 @@
 import { useContext, useState } from 'react';
 import { assets } from '../assets/assets';
-import axios from 'axios';
-import { backendUrl } from '../App';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { TokenContext } from '../context/TokenContext';
+import { auth, signInWithEmailAndPassword, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const navigate = useNavigate();
-  const { setToken } = useContext(TokenContext);
 
-  const onSubmitHandler = async (e) => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      e.preventDefault();
-      const response = await axios.post(backendUrl + '/api/admin/login', {
-        username,
-        password,
-      });
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-      if (
-        response.data.success &&
-        (response.data.role === 'superadmin' || response.data.role === 'staff')
-      ) {
-        localStorage.removeItem('token'); // เคลียร์ token เก่า
-        setToken(response.data.token);
-        navigate('/');
+      const user = userCredential.user;
+
+      // ดึงข้อมูล user ตรง ๆ จาก firestore
+      const userDocRef = doc(db, 'user_admin', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const freshUserData = userDocSnap.data();
+
+        if (freshUserData.role === 'admin') {
+          navigate('/');
+        } else {
+          toast.error('You do not have permission to access this page.');
+        }
       } else {
-        toast.error(response.data.message);
+        toast.error('User data not found.');
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.message);
+      console.error('Login failed:', error.message);
+      toast.error(`Login failed`);
     }
   };
+
   return (
     <div className="w-full h-screen flex justify-center items-center bg-black relative">
       <div className="absolute top-8 left-8">
@@ -43,15 +51,16 @@ const Login = () => {
 
       <div className="rounded-2xl shadow-[0_0_80px_rgba(101,163,13,1.0)] flex flex-col gap-5 p-20 bg-lime-500 text-white">
         <h1 className="text-5xl font-bold">Admin Login</h1>
-        <form onSubmit={onSubmitHandler} className="flex flex-col gap-5">
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <label htmlFor="username">Username</label>
             <input
-              type="text"
-              id="username"
+              type="email"
+              id="email"
               className="input text-black border-none"
-              placeholder="Username"
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Email"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -62,6 +71,7 @@ const Login = () => {
               className="input text-black border-none"
               placeholder="Password"
               onChange={(e) => setPassword(e.target.value)}
+              value={password}
             />
           </div>
           <button className="btn btn-neutral">Login</button>
@@ -70,4 +80,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;

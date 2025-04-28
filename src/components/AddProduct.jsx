@@ -3,11 +3,11 @@ import { assets } from './../assets/assets';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { backendUrl } from '../App';
-import { TokenContext } from '../context/TokenContext';
 import { ProductDataContext } from '../context/ProductContext';
+import { getAuth } from 'firebase/auth';
+import { getIdToken } from 'firebase/auth';
 
 const AddProduct = () => {
-  const { token } = useContext(TokenContext);
   const { fetchList } = useContext(ProductDataContext);
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
@@ -20,6 +20,18 @@ const AddProduct = () => {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
   const [bestseller, setBestseller] = useState(false);
+
+  const getToken = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const token = await getIdToken(user);
+      return token;
+    } else {
+      throw new Error('No user is signed in');
+    }
+  };
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -39,8 +51,11 @@ const AddProduct = () => {
       image3 && formData.append('image3', image3);
       image4 && formData.append('image4', image4);
 
+      const token = await getToken();
       const response = await axios.post(backendUrl + '/api/product', formData, {
-        headers: { 'token': token },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data.success) {
@@ -49,7 +64,7 @@ const AddProduct = () => {
         setName('');
         setDescription('');
         setSpecs('');
-        setPrice(null);
+        setPrice('');
         setImage1(null);
         setImage2(null);
         setImage3(null);
@@ -233,7 +248,7 @@ const AddProduct = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label for="specInput" className="font-bold text-xl">
+        <label htmlFor="specInput" className="font-bold text-xl">
           Technical specifications{' '}
           <span className="text-sm text-red-500">
             (***Please enter each specification on a new line.***)
@@ -272,8 +287,8 @@ const AddProduct = () => {
               type="text"
               placeholder="200"
               className="input"
-              onChange={(e) => setPrice(e.target.value)}
               value={price}
+              onChange={(e) => setPrice(e.target.value)}
             />
             <p>฿</p>
           </div>

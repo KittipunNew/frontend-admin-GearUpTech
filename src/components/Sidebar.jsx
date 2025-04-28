@@ -1,15 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
 import { logoutIcon } from '../assets/icon';
-import { useContext } from 'react';
-import { TokenContext } from '../context/TokenContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const { token, setToken } = useContext(TokenContext);
-  const handleLogout = () => {
-    setToken('');
-    navigate('/login/admin');
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/login');
   };
 
   return (

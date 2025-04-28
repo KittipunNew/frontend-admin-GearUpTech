@@ -1,19 +1,19 @@
 import axios from 'axios';
 import { backendUrl } from '../App';
-import { createContext, useState, useEffect, useContext } from 'react';
-import { TokenContext } from './TokenContext';
+import { createContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { getIdToken } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
+import { auth } from '../firebase';
 
 export const ProductDataContext = createContext();
 
 export const ProductDataProvider = ({ children }) => {
-  const { token } = useContext(TokenContext);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [startDate, setStartDate] = useState('');
-
   const [editedProduct, setEditedProduct] = useState({
     name: '',
     category: '',
@@ -23,6 +23,18 @@ export const ProductDataProvider = ({ children }) => {
   });
 
   const bestseller = products.filter((item) => item.bestseller === true);
+
+  const getToken = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const token = await getIdToken(user);
+      return token;
+    } else {
+      throw new Error('No user is signed in');
+    }
+  };
 
   const fetchList = async () => {
     try {
@@ -38,12 +50,10 @@ export const ProductDataProvider = ({ children }) => {
     fetchList();
   }, []);
 
-  // อัปเดต filteredProducts ทุกครั้งที่ products เปลี่ยนแปลง
   useEffect(() => {
     setFilteredProducts(products);
   }, [products]);
 
-  // ฟังก์ชันกรองสินค้า
   const filterProducts = () => {
     let filtered = products;
 
@@ -65,7 +75,6 @@ export const ProductDataProvider = ({ children }) => {
     setFilteredProducts(filtered);
   };
 
-  // ฟังก์ชันรีเซ็ตฟิลเตอร์
   const resetFilters = () => {
     setName('');
     setCategory('');
@@ -73,12 +82,16 @@ export const ProductDataProvider = ({ children }) => {
     setFilteredProducts(products);
   };
 
-  // ฟังก์ชันลบสินค้า
   const handleDelete = async (idToDelete) => {
     try {
+      const token = await getToken();
       const response = await axios.delete(
         `${backendUrl}/api/product/${idToDelete}`,
-        { headers: { 'token': token } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       if (response.status === 200) {
@@ -95,13 +108,17 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
-  // ฟังก์ชั่นเพิ่มสินค้าขายดี
   const addToBestseller = async (idToAdd) => {
     try {
+      const token = await getToken();
       const response = await axios.put(
         `${backendUrl}/api/product/${idToAdd}/bestseller`,
         { bestseller: true },
-        { headers: { 'token': token } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setProducts((prevProducts) =>
@@ -117,16 +134,21 @@ export const ProductDataProvider = ({ children }) => {
       );
     } catch (err) {
       console.log(err);
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || 'Something went wrong.');
     }
   };
 
   const updateProductInfo = async (idToUpdate) => {
     try {
+      const token = await getToken();
       const response = await axios.put(
         `${backendUrl}/api/product/${idToUpdate}/updateproduct`,
         editedProduct,
-        { headers: { 'token': token } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
@@ -145,12 +167,16 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
-  // ฟังก์ชั่นลบสินค้าขายดี
-  const removeBestseller = async (idToAdd) => {
+  const removeBestseller = async (idToRemove) => {
     try {
+      const token = await getToken();
       const response = await axios.delete(
-        `${backendUrl}/api/product/${idToAdd}/bestseller`,
-        { headers: { 'token': token } }
+        `${backendUrl}/api/product/${idToRemove}/bestseller`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       setProducts((prevProducts) =>
