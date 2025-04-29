@@ -14,7 +14,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig); // เชื่อมต่อ Firebase
 
-const auth = getAuth(app); // เอาไว้ทำเรื่องเกี่ยวกับ "ล็อกอิน / ล็อกเอาต์ / สมัครสมาชิก"
+const auth = getAuth(app); // เอาไว้ทำเรื่องเกี่ยวกับ ล็อกอิน / ล็อกเอาต์
 const db = getFirestore(app); //  เอาไว้จัดการข้อมูลในฐานข้อมูล Firestore
 
 export { auth, signInWithEmailAndPassword, db };
