@@ -1,10 +1,8 @@
 import axios from 'axios';
 import { backendUrl } from '../App';
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { toast } from 'react-toastify';
-import { getIdToken } from 'firebase/auth';
-import { getAuth } from 'firebase/auth';
-import { auth } from '../firebase';
+import { AuthContext } from './AuthContext';
 
 export const ProductDataContext = createContext();
 
@@ -22,20 +20,11 @@ export const ProductDataProvider = ({ children }) => {
     price: '',
   });
 
+  const { getToken } = useContext(AuthContext);
+
   const bestseller = products.filter((item) => item.bestseller === true);
 
-  const getToken = async () => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (user) {
-      const token = await getIdToken(user);
-      return token;
-    } else {
-      throw new Error('No user is signed in');
-    }
-  };
-
+  // รายการสินค้าทั้งหมด
   const fetchList = async () => {
     try {
       const response = await axios.get(backendUrl + '/api/product');
@@ -46,14 +35,17 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
+  // เรียกใช้งานฟังก์ชั่นดึงรายการสินค้าทั้งหมด
   useEffect(() => {
     fetchList();
   }, []);
 
+  // กรองข้อมูลสินค้า
   useEffect(() => {
     setFilteredProducts(products);
   }, [products]);
 
+  // กรองข้อมูลสินค้า
   const filterProducts = () => {
     let filtered = products;
 
@@ -75,6 +67,7 @@ export const ProductDataProvider = ({ children }) => {
     setFilteredProducts(filtered);
   };
 
+  // รีเซ็ตการกรองข้อมูล
   const resetFilters = () => {
     setName('');
     setCategory('');
@@ -82,6 +75,7 @@ export const ProductDataProvider = ({ children }) => {
     setFilteredProducts(products);
   };
 
+  // ฟังก์ชั้นลบข้อมูลสินค้า
   const handleDelete = async (idToDelete) => {
     try {
       const token = await getToken();
@@ -108,6 +102,7 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
+  // ฟังก์ชั่นเพิ่มสินค้าขายดี
   const addToBestseller = async (idToAdd) => {
     try {
       const token = await getToken();
@@ -138,6 +133,7 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
+  // ฟังก์ชั่นอัพเดทข้อมูลสินค้า
   const updateProductInfo = async (idToUpdate) => {
     try {
       const token = await getToken();
@@ -167,6 +163,7 @@ export const ProductDataProvider = ({ children }) => {
     }
   };
 
+  //ฟังก์ชั่นลบออกจากสินค้าขายดี
   const removeBestseller = async (idToRemove) => {
     try {
       const token = await getToken();

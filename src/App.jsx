@@ -12,11 +12,13 @@ import { AuthContext } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import ListProduct from './pages/ListProduct';
 import Login from './pages/Login';
+import Order from './pages/Order';
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const App = () => {
   const { userData } = useContext(AuthContext);
+  console.log(userData);
   return (
     <div className="flex font-rajdhani bg-base-300 min-h-screen">
       <ToastContainer />
@@ -31,6 +33,7 @@ const App = () => {
             )
           }
         />
+
         <Route
           path="/"
           element={
@@ -46,6 +49,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/addproducts"
           element={
@@ -55,6 +59,22 @@ const App = () => {
                 <div className="w-full">
                   <Layout>
                     <AddProduct />
+                  </Layout>
+                </div>
+              </div>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <PrivateRoute>
+              <div className="w-full flex">
+                <Sidebar />
+                <div className="w-full">
+                  <Layout>
+                    <Order />
                   </Layout>
                 </div>
               </div>
