@@ -21,3 +21,7 @@ Frontend สำหรับแอดมินระบบ GearUp Tech ใช้�
 ```bash
 npm install
 npm run dev
+
+สำหรับเข้าสู่ระบบ
+- **Email:** `test@email.com`
+- **Password:** `testadmin1234`
