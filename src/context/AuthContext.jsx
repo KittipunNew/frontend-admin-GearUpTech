@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
 
     if (user) {
       const token = await getIdToken(user);
+      console.log(token);
       return token;
     } else {
       throw new Error('No user is signed in');
